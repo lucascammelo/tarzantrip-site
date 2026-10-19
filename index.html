@@ -557,10 +557,9 @@ body.locked{overflow:hidden}
           </select>
         </div>
         <div class="row2">
-          <div class="field"><label for="f-adultos">Adultos</label><input id="f-adultos" name="adultos" type="number" min="1" max="30" value="2" inputmode="numeric"></div>
-          <div class="field"><label for="f-criancas">Crianças</label><input id="f-criancas" name="criancas" type="number" min="0" max="20" value="0" inputmode="numeric"></div>
+          <div class="field"><label for="f-adultos">Pessoas</label><input id="f-adultos" name="pessoas" type="number" min="1" max="30" value="2" inputmode="numeric"></div>
+          <div class="field"><label for="f-data">Data preferida</label><input id="f-data" name="data" type="date"></div>
         </div>
-        <div class="field"><label for="f-data">Data preferida</label><input id="f-data" name="data" type="date"></div>
         <p class="form-price" id="f-preco" aria-live="polite"></p>
         <a class="btn btn-wa" id="f-send" href="#" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3a.4.4 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.6 11.6 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg>
@@ -805,15 +804,14 @@ body.locked{overflow:hidden}
     var trilha=document.getElementById('f-trilha').value;
     var tipo=document.getElementById('f-tipo').value;
     var ad=Math.max(0,parseInt(document.getElementById('f-adultos').value,10)||0);
-    var cr=Math.max(0,parseInt(document.getElementById('f-criancas').value,10)||0);
-    var data=fmtDate(document.getElementById('f-data').value);
+        var data=fmtDate(document.getElementById('f-data').value);
     var W={
-      pt:{priv:' (privativo)',ad:['adulto','adultos'],cr:['criança','crianças'],and:' e ',pp:'por pessoa',pv:'Privativo'},
-      en:{priv:' (private)',ad:['adult','adults'],cr:['child','children'],and:' and ',pp:'per person',pv:'Private'},
-      es:{priv:' (privado)',ad:['adulto','adultos'],cr:['niño','niños'],and:' y ',pp:'por persona',pv:'Privado'}
+      pt:{priv:' (privativo)',ad:['pessoa','pessoas'],pp:'por pessoa',pv:'Privativo'},
+      en:{priv:' (private)',ad:['person','people'],pp:'per person',pv:'Private'},
+      es:{priv:' (privado)',ad:['persona','personas'],pp:'por persona',pv:'Privado'}
     }[LANG];
     function qty(n,f){ return n+' '+(n===1?f[0]:f[1]); }
-    var grp=''; if(ad) grp=qty(ad,W.ad); if(cr) grp+=(grp?W.and:'')+qty(cr,W.cr);
+    var grp=ad?qty(ad,W.ad):'';
     var nomeT = LANG==='pt'?trilha:(LANG==='en'?(TRAIL_EN[trilha]||trilha):(TRAIL_ES[trilha]||trilha));
     if(tipo==='privativo') nomeT+=W.priv;
     var msg;
@@ -858,9 +856,7 @@ body.locked{overflow:hidden}
       nome:document.getElementById('f-nome').value.trim(),
       whatsapp:digits,
       trilha:document.getElementById('f-trilha').value+(document.getElementById('f-tipo').value==='privativo'?' (privativo)':''),
-      pessoas:String((parseInt(document.getElementById('f-adultos').value,10)||0)+(parseInt(document.getElementById('f-criancas').value,10)||0)),
-      adultos:document.getElementById('f-adultos').value,
-      criancas:document.getElementById('f-criancas').value,
+      pessoas:String(parseInt(document.getElementById('f-adultos').value,10)||0),
       tipo:document.getElementById('f-tipo').value,
       data:document.getElementById('f-data').value,
       idioma:LANG,
