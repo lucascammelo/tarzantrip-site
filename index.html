@@ -727,6 +727,44 @@ body.locked{overflow:hidden}
       dois: '¡Hola Tarzan! Vi el sitio web y quiero reservar el Morro Dois Irmãos.'
     }
   };
+
+  /* ===== eventos da página pro painel (sem dados pessoais: só um código aleatório da visita) ===== */
+  var SB_URL='https://ycbokvixbxkekcgnzhwl.supabase.co', SB_KEY='sb_publishable_cdAVG9aWMzd9QAZXe6HkZQ_qX3CV8Sb';
+  var SID=''; try{ SID=sessionStorage.getItem('tt-sid')||''; if(!SID){ SID=Date.now().toString(36)+Math.random().toString(36).slice(2,10); sessionStorage.setItem('tt-sid',SID); } }catch(e){ SID=Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
+  var formAberto=false;
+  function evento(tipo, alvo){
+    if(tipo==='form_aberto'){ if(formAberto) return; formAberto=true; }
+    var p={ tipo:tipo, sessao:SID, alvo:alvo||'', pagina:location.href.split('#')[0].split('?')[0], referrer:document.referrer||'',
+      utm_source:UTM.utm_source||'', utm_medium:UTM.utm_medium||'', utm_campaign:UTM.utm_campaign||'', utm_content:UTM.utm_content||'',
+      dispositivo: window.matchMedia('(max-width: 820px)').matches ? 'celular' : 'computador' };
+    try{ fetch(SB_URL+'/rest/v1/rpc/registrar_evento',{method:'POST',keepalive:true,headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_cliente:'tarzantrip',p:p})}).catch(function(){}); }catch(e){}
+  }
+  evento('visita');
+  (function(){
+    var marcos=[25,50,75,100], feitos={}, t;
+    function check(){ var h=document.documentElement, max=h.scrollHeight-window.innerHeight; if(max<=0) return;
+      var pct=Math.round((window.scrollY||h.scrollTop)/max*100);
+      marcos.forEach(function(m){ if(pct>=m-2 && !feitos[m]){ feitos[m]=1; evento('rolagem', m+'%'); } }); }
+    window.addEventListener('scroll',function(){ clearTimeout(t); t=setTimeout(check,250); },{passive:true});
+  })();
+  (function(){
+    var visivel=0, desde=document.visibilityState==='visible'?Date.now():0, enviado=false;
+    function faixa(sg){ return sg<10?'menos de 10s':sg<30?'10 a 30s':sg<60?'30s a 1 min':sg<180?'1 a 3 min':sg<600?'3 a 10 min':'mais de 10 min'; }
+    function sair(){ if(desde){ visivel+=Date.now()-desde; desde=0; } if(!enviado){ enviado=true; evento('tempo', faixa(Math.round(visivel/1000))); } }
+    document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') sair(); else if(!desde) desde=Date.now(); });
+    window.addEventListener('pagehide',sair);
+  })();
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a,button,summary'); if(!a) return;
+    if(a.hasAttribute('data-wa')) return evento('clique', a.classList.contains('float-wa') ? 'flutuante' : a.closest('header,.nav') ? 'menu' : a.closest('.hero') ? 'topo' : a.closest('footer') ? 'rodape' : 'whatsapp');
+    if(a.hasAttribute('data-book')) return evento('clique', 'reservar: '+(a.getAttribute('data-book')||'geral'));
+    if(a.id==='f-send' || a.closest('#book-modal')) return;
+    if(a.tagName==='SUMMARY'){ var d=a.parentElement; if(d && !d.open) evento('faq', a.textContent.trim().slice(0,80)); return; }
+    if(a.hasAttribute('data-lang') || a.closest('.lang')) return evento('navegacao','idioma: '+a.textContent.trim().slice(0,10));
+    var href=a.getAttribute('href')||'';
+    if(/^https?:/.test(href)){ try{ var u=new URL(href); return evento('navegacao','link: '+u.hostname.replace(/^www\./,'')); }catch(err){} }
+    if(href.charAt(0)==='#' && a.textContent.trim()) return evento('navegacao','botão: '+a.textContent.trim().slice(0,30));
+  },true);
   function wa(text){ return 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(text); }
   function track(origem){
     try{ if(window.fbq) window.fbq('track','Contact',{content_name:origem,idioma:LANG}); }catch(e){}
@@ -854,6 +892,7 @@ body.locked{overflow:hidden}
     build();
     opened=true; clearTimeout(partialT);
     sendLead(leadData('abriu_whatsapp'));
+    evento('clique','continuar_whatsapp');
     track('formulario');
   });
   /* manda o número assim que a pessoa sai do campo, mesmo que ela não clique em reservar */
@@ -904,8 +943,10 @@ body.locked{overflow:hidden}
     requestAnimationFrame(function(){ modal.classList.add('open'); });
     setTimeout(function(){ var f=document.getElementById('f-nome'); if(f) f.focus({preventScroll:true}); },60);
     track('abrir_reserva');
+    evento('form_aberto');
   }
   function closeBook(){
+    if(!opened) evento('form_fechado', waDigits().length>=12 ? 'com_numero' : (document.getElementById('f-nome').value.trim() ? 'comecou_e_parou' : 'vazio'));
     modal.classList.remove('open'); document.body.classList.remove('locked');
     if(window.__lenis) window.__lenis.start();
     setTimeout(function(){ modal.hidden=true; home.parentNode.insertBefore(form,home.nextSibling); if(lastFocus) lastFocus.focus({preventScroll:true}); },250);
