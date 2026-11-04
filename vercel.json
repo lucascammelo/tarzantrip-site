@@ -1,13 +1,17 @@
 {
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/whatsapp",
+      "destination": "https://wa.me/5521976765753?text=Oi%20Tarzan,%20vim%20do%20Instagram%20e%20quero%20informa%C3%A7%C3%B5es",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/img/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     }
   ]
