@@ -178,6 +178,16 @@ p{margin:0}
 .xcard .price{text-align:left}
 .xcard h4{margin:0;max-width:none}
 @media (max-width:860px){.extras-grid{grid-template-columns:1fr}}
+.carousel .car-track{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.carousel .car-track::-webkit-scrollbar{display:none}
+.carousel .car-track img{position:relative;inset:auto;flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;user-select:none}
+.car-btn{position:absolute;top:50%;translate:0 -50%;z-index:3;width:44px;height:44px;border-radius:50%;border:0;background:rgba(244,243,238,.9);color:var(--forest);font-size:28px;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.18);transition:opacity .2s}
+.car-btn.prev{left:14px}.car-btn.next{right:14px}
+.car-btn[disabled]{opacity:0;pointer-events:none}
+.car-dots{position:absolute;left:0;right:0;bottom:14px;z-index:3;display:flex;justify-content:center;gap:7px}
+.car-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55);transition:background .2s,width .2s}
+.car-dots i.on{background:#fff;width:20px;border-radius:99px}
+@media (hover:none){.car-btn{display:none}}
 @media (max-width:960px){.trail{grid-template-columns:1fr}.trail:nth-of-type(even) .trail-media{order:0}.trail-media{min-height:320px;aspect-ratio:4/3;max-width:100%}}
 
 /* guia */
@@ -468,8 +478,17 @@ body.locked{overflow:hidden}
               </div>
             </div>
             <div class="xcard">
-              <div class="xcard-media ph">
-                <img src="img/foto-20.webp" alt="Rapel de 147 metros no Rosto do Imperador, na Pedra da Gávea, com São Conrado e o mar lá embaixo" loading="lazy">
+              <div class="xcard-media ph carousel">
+                <div class="car-track" tabindex="0" aria-label="Fotos do rapel de 147 m">
+                  <img src="img/foto-20.webp" alt="Rapel de 147 metros no Rosto do Imperador, na Pedra da Gávea, com São Conrado e o mar lá embaixo" loading="lazy" draggable="false">
+                  <img src="img/foto-21.webp" alt="Paredão do Rosto do Imperador visto de longe, com uma pessoa descendo de rapel e o Dois Irmãos ao fundo" loading="lazy" draggable="false">
+                  <img src="img/foto-22.webp" alt="Trilheiro descendo de rapel com o Morro Dois Irmãos e as nuvens atrás" loading="lazy" draggable="false">
+                  <img src="img/foto-23.webp" alt="Trilheiro de capacete pendurado na corda do rapel, com o Dois Irmãos ao fundo" loading="lazy" draggable="false">
+                  <img src="img/foto-24.webp" alt="Trilheira de cabeça pra baixo na corda do rapel, acima das nuvens" loading="lazy" draggable="false">
+                </div>
+                <button type="button" class="car-btn prev" aria-label="Foto anterior">&#8249;</button>
+                <button type="button" class="car-btn next" aria-label="Próxima foto">&#8250;</button>
+                <div class="car-dots" aria-hidden="true"></div>
                 <span class="tag">Novo</span>
               </div>
               <div class="xcard-body">
@@ -483,6 +502,7 @@ body.locked{overflow:hidden}
                   <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Rapel de 147 m</span>
                   <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Equipamento de rapel</span>
                   <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Fotos profissionais</span>
+                  <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Drone incluso</span>
                 </div>
                 <button type="button" class="btn btn-dark" data-book="Pedra da Gávea + Rapel do Rosto do Imperador">Reservar o rapel de 147 m</button>
               </div>
@@ -1013,6 +1033,20 @@ body.locked{overflow:hidden}
     if(window.__lenis) window.__lenis.start();
     setTimeout(function(){ modal.hidden=true; home.parentNode.insertBefore(form,home.nextSibling); if(lastFocus) lastFocus.focus({preventScroll:true}); },250);
   }
+  /* carrossel de fotos nos cards de rapel */
+  document.querySelectorAll('.carousel').forEach(function(c){
+    var tr=c.querySelector('.car-track'), n=tr.children.length, dots=c.querySelector('.car-dots'),
+        pv=c.querySelector('.prev'), nx=c.querySelector('.next');
+    for(var i=0;i<n;i++) dots.appendChild(document.createElement('i'));
+    function idx(){ return Math.round(tr.scrollLeft/tr.clientWidth); }
+    function upd(){ var k=idx(); [].forEach.call(dots.children,function(d,j){ d.classList.toggle('on',j===k); }); pv.disabled=k<=0; nx.disabled=k>=n-1; }
+    function go(d){ tr.scrollTo({left:(idx()+d)*tr.clientWidth,behavior:'smooth'}); }
+    pv.addEventListener('click',function(){ go(-1); }); nx.addEventListener('click',function(){ go(1); });
+    tr.addEventListener('scroll',function(){ requestAnimationFrame(upd); },{passive:true});
+    tr.addEventListener('keydown',function(e){ if(e.key==='ArrowRight'){e.preventDefault();go(1);} if(e.key==='ArrowLeft'){e.preventDefault();go(-1);} });
+    tr.setAttribute('data-lenis-prevent-wheel','');
+    upd();
+  });
   document.querySelectorAll('[data-book]').forEach(function(b){
     b.addEventListener('click',function(){ openBook(b.getAttribute('data-book')); });
   });
